@@ -1,0 +1,106 @@
+<beans xmlns="http://www.springframework.org/schema/beans" 
+		xmlns:security="http://www.springframework.org/schema/security" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+          http://www.springframework.org/schema/security
+          http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+
+	<!-- 认证管理器,配置了管理员与角色的关系  -->
+	<security:authentication-manager alias="authenticationManager">
+		<!-- 配置账号密码所属的角色  角色以 ROLE_开头，为spring获取名称的标识 (xml方式的才需要)
+			user-service-ref="accountService" : 配置启动数据库方式获取用户和角色，xml失效
+		 -->
+		<security:authentication-provider user-service-ref="accountService">
+			<!-- 采用xml的方式 
+			<security:user-service>
+				<security:user name="user" password="user" authorities="ROLE_USER" />
+				<security:user name="admin" password="admin" authorities="ROLE_ADMIN" />
+			</security:user-service>
+			 -->
+		</security:authentication-provider>
+	</security:authentication-manager>
+	
+	<!--
+		auto-config="true"  	: 自动生成登录页面
+		pattern="/admin/**" 	: 为配置的路径,**表示支持子目录
+		access="ROLE_ADMIN" 	: 需要管理员权限,“ROLE_”前缀是一个提示Spring使用基于角色的检查的标记。
+		use-expressions="true"	: 表示access中支持hasRole这样的函数
+	 -->
+	<!--<security:http auto-config="false" use-expressions="true">-->
+	<security:http  access-decision-manager-ref="roleAccessDecisionManager"  entry-point-ref="authenticationEntryPoint">
+		<!-- xml配置,配置的 pattern="/admin/**" 表示需要登录才能访问，而登录的角色为ROLE_ADMIN
+		<security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
+		<security:intercept-url pattern="/user/**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN')" />	
+
+		  -->
+		<security:csrf disabled="false"/>
+
+				<!-- 增加权限过滤器,采用数据库方式获取权限 -->
+		<security:custom-filter ref="filterSecurityInterceptor" before="FILTER_SECURITY_INTERCEPTOR"/>
+
+		<security:custom-filter ref="captchaAuthenticaionFilter" position="FORM_LOGIN_FILTER"/>
+
+
+		<!-- 默认登录地址：j_spring_security_check -->
+		<!--<security:form-login default-target-url="/index.jsp" -->
+			<!--username-parameter="username"-->
+			<!--password-parameter="password"-->
+			<!--authentication-failure-url="/login.jsp?error=authentication-failure-url"-->
+			<!--login-page="/login.jsp"/>-->
+
+		<!-- 注销也是由,Security框架来实现,LogoutFilter ,默认地址j_spring_security_logout   -->
+	 	<security:logout logout-success-url="/login.jsp"/>
+
+		<!-- session 管理 -->
+		<security:session-management invalid-session-url="/login.jsp">
+			<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="true" expired-url="/login.jsp"/>
+		</security:session-management>
+	</security:http>
+	
+	<!-- 配置 验证过滤器, 此过滤器取代系统的XML权限过滤 , 此过滤器配置完毕之后存放到 系统缺省的过滤链中-->
+	<bean id="filterSecurityInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+		<!-- 需要认证管理器, 通过它可以获取 管理员已经拥有的角色信息  ，
+			由于id已经被org.springframework.security.authenticationManager默认了。不能更改，所以用别名-->
+		<property name="authenticationManager" ref="authenticationManager"></property>
+		<!-- 决策器 -->
+		<property name="accessDecisionManager" ref="roleAccessDecisionManager" />	 	
+		<!-- 配置urlService ，security可以通过url得到角色名称 -->
+	 	<property name="securityMetadataSource" ref="urlService" />
+	</bean>
+
+	<!--<bean id="usernamePassword" class="com.hp.security.filter.UsernamePasswordFilter">
+		<property name="authenticationManager"  ref="authenticationManager"/>
+		<property name="authenticationSuccessHandler">
+			<bean class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
+				<property name="defaultTargetUrl" value="/index.jsp"/>
+			</bean>
+		</property>
+		<property name="authenticationFailureHandler">
+			<bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+				<property name="defaultFailureUrl" value="/login.jsp"/>
+			</bean>
+		</property>
+	</bean>-->
+
+	<bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+		<constructor-arg index="0" value="/login.jsp"/>
+	</bean>
+
+	<bean id="captchaAuthenticaionFilter" class="com.hp.security.filter.CaptchaAuthenticationFilter">
+		<property name="authenticationManager" ref="authenticationManager" />
+		<property name="authenticationFailureHandler" ref="authenticationFailureHandler" />
+		<property name="authenticationSuccessHandler" ref="authenticationSuccessHandler" />
+		<property name="filterProcessesUrl" value="/login" />
+	</bean>
+
+	<bean id="authenticationSuccessHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
+		<property name="defaultTargetUrl" value="/index.jsp"/>
+	</bean>
+
+	<bean id="authenticationFailureHandler"
+		  class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+		<property name="defaultFailureUrl" value="/login.jsp" />
+	</bean>
+
+</beans>
