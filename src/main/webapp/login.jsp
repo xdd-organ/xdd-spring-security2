@@ -25,8 +25,8 @@
 				<td><input type="text" name="code1" /></td>
 			</tr>
 			<tr>
-				<td>code2：</td>
-				<td><input type="text" name="code2" /></td>
+				<td>记住我：</td>
+				<td><input type="radio" name="rememberMe" /></td>
 			</tr>
 			<tr>
 				<td colspan="2" align="center"><input type="submit" value="登录" />

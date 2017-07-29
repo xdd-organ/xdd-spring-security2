@@ -12,7 +12,7 @@
 			user-service-ref="accountService" : 配置启动数据库方式获取用户和角色，xml失效
 		 -->
 		<security:authentication-provider user-service-ref="accountService">
-			<!-- 采用xml的方式 
+			<!-- 采用xml的方式
 			<security:user-service>
 				<security:user name="user" password="user" authorities="ROLE_USER" />
 				<security:user name="admin" password="admin" authorities="ROLE_ADMIN" />
@@ -50,10 +50,12 @@
 			<!--login-page="/login.jsp"/>-->
 
 		<!-- 注销也是由,Security框架来实现,LogoutFilter ,默认地址j_spring_security_logout   -->
-	 	<security:logout logout-success-url="/login.jsp"/>
+	 	<security:logout logout-success-url="/login.jsp" delete-cookies="JSESSIONID" invalidate-session="true"/>
+
+		<security:remember-me remember-me-parameter="rememberMe" key="user" token-validity-seconds="10000"/>
 
 		<!-- session 管理 -->
-		<security:session-management invalid-session-url="/login.jsp">
+		<security:session-management invalid-session-url="/login.jsp" session-fixation-protection="migrateSession">
 			<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="true" expired-url="/login.jsp"/>
 		</security:session-management>
 	</security:http>
@@ -62,7 +64,7 @@
 	<bean id="filterSecurityInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
 		<!-- 需要认证管理器, 通过它可以获取 管理员已经拥有的角色信息  ，
 			由于id已经被org.springframework.security.authenticationManager默认了。不能更改，所以用别名-->
-		<property name="authenticationManager" ref="authenticationManager"></property>
+		<property name="authenticationManager" ref="authenticationManager"/>
 		<!-- 决策器 -->
 		<property name="accessDecisionManager" ref="roleAccessDecisionManager" />	 	
 		<!-- 配置urlService ，security可以通过url得到角色名称 -->
@@ -92,6 +94,8 @@
 		<property name="authenticationFailureHandler" ref="authenticationFailureHandler" />
 		<property name="authenticationSuccessHandler" ref="authenticationSuccessHandler" />
 		<property name="filterProcessesUrl" value="/login" />
+		<property name="usernameParameter" value="username"/>
+		<property name="passwordParameter" value="password"/>
 	</bean>
 
 	<bean id="authenticationSuccessHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">

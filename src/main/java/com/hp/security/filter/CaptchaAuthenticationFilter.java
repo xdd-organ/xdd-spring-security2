@@ -20,13 +20,13 @@ public class CaptchaAuthenticationFilter extends UsernamePasswordAuthenticationF
 
         String genCode = this.obtainGeneratedCaptcha(request);  
         String inputCode = this.obtainCaptcha(request);  
-        if(StringUtils.isEmpty(genCode))
+        if(StringUtils.isEmpty(genCode)) {
             //i18n
             //throw new RuntimeException(this.messages.getMessage("LoginAuthentication.captchaInvalid"));
-            throw new RuntimeException("没有验证码");
-        if(!genCode.equalsIgnoreCase(inputCode)){
-            throw new RuntimeException(this.messages.getMessage("LoginAuthentication.captchaNotEquals"));
-        }  
+            //throw new RuntimeException("没有验证码");
+        //if(!genCode.equalsIgnoreCase(inputCode)){
+            //throw new RuntimeException(this.messages.getMessage("LoginAuthentication.captchaNotEquals"));
+        }
 
         return super.attemptAuthentication(request, response);  
     }  
