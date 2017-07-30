@@ -14,10 +14,10 @@ import javax.annotation.Resource;
  * @author baojulin
  *
  */
-@Component("accountDao")
+//@Component("accountDao")
 public class AccountDaoImpl implements AccountDao {
 
-	@Resource
+//	@Resource
 	private SessionFactory sessionFactory;
 
 	/**

@@ -15,9 +15,9 @@ import javax.annotation.Resource;
  * @author baojulin
  *
  */
-@Component("urlDao")
+//@Component("urlDao")
 public class UrlDaoImpl implements UrlDao {
-	@Resource
+//	@Resource
 	private SessionFactory sessionFactory;
 
 	/**

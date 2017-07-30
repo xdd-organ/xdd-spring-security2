@@ -5,7 +5,7 @@
 	<!-- 加载spring配置文件 -->
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>classpath*:spring.xml,classpath*:spring-*.xml</param-value>
+		<param-value>classpath:spring-public.xml</param-value>
 	</context-param>
 
 	<!-- 添加spring监听器 -->

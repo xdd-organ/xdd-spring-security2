@@ -1,13 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.hp.mapper.AccountMapper">
-    <insert id="getJoinRole" parameterType="java.util.Map">
-        <selectKey resultType="java.lang.Long" keyProperty="id">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
-    </insert>
+    <!--<insert id="getJoinRole" parameterType="java.util.Map">-->
+        <!--<selectKey resultType="java.lang.Long" keyProperty="id">-->
+            <!--SELECT LAST_INSERT_ID()-->
+        <!--</selectKey>-->
+    <!--</insert>-->
 
-    <select id="getJoinRole" parameterType="com.hp.model.Account" resultType="com.hp.model.Account">
+    <resultMap id="baseMap" type="com.hp.model.Account" autoMapping="true">
+        <collection property="roles" select="queryRole" column="{aid = aid}"/>
+    </resultMap>
+
+    <select id="getJoinRole" parameterType="com.hp.model.Account" resultMap="baseMap">
+        select
+            a.id aid,
+            a.login login,
+            a.name name,
+            a.pass pass
+        from
+            account a
+        WHERE
+            a.login = #{login}
+    </select>
+
+    <select id="queryRole" resultType="com.hp.model.Role" parameterType="java.util.Map">
+        select
+            a.aid,
+            b.name name,
+            b.detail detail
+        from
+            account_role a
+        left join
+            role b on a.rid = b.id
+        where
+            a.aid = #{aid}
 
     </select>
 </mapper>

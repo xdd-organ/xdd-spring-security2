@@ -1,13 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.hp.mapper.AccountMapper">
-    <insert id="getJoinRole" parameterType="java.util.Map">
-        <selectKey resultType="java.lang.Long" keyProperty="id">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
-    </insert>
+<mapper namespace="com.hp.mapper.UrlMapper">
+    <!--<insert id="getJoinRole" parameterType="java.util.Map">-->
+        <!--<selectKey resultType="java.lang.Long" keyProperty="id">-->
+            <!--SELECT LAST_INSERT_ID()-->
+        <!--</selectKey>-->
+    <!--</insert>-->
 
-    <select id="getJoinRole" parameterType="com.hp.model.Account" resultType="com.hp.model.Account">
+    <resultMap id="baseMap" type="com.hp.model.Url" autoMapping="true">
+        <association property="privilege" column="{pid = pid}" select="queryPrivilege"/>
+    </resultMap>
 
+    <resultMap id="privilegeMap" type="com.hp.model.Privilege" autoMapping="true">
+        <collection property="roles" select="queryRole" column="{id = id}"/>
+    </resultMap>
+
+    <select id="getRoleByUrl" parameterType="com.hp.model.Url" resultMap="baseMap">
+        select
+            a.id id,
+            a.url url,
+            a.pid pid
+        from
+            url a
+        where
+            a.url = #{url}
+    </select>
+
+    <select id="queryPrivilege" parameterType="java.util.Map" resultMap="privilegeMap">
+        select
+            a.id id,
+            a.name name
+        from
+            privilege a
+        where
+            a.id = #{pid}
+    </select>
+
+    <select id="queryRole" resultType="com.hp.model.Role" parameterType="java.util.Map">
+        select
+            a.rid,
+            b.name name,
+            b.detail detail
+        from
+            privilege_role a
+        left join
+            role b on a.rid = b.id
+        where
+            a.pid = #{id}
     </select>
 </mapper>

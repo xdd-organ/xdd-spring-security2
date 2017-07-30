@@ -1,9 +1,11 @@
 package com.hp.service.impl;
 
 import com.hp.dao.UrlDao;
+import com.hp.mapper.UrlMapper;
 import com.hp.model.Role;
 import com.hp.model.Url;
 import com.hp.service.UrlService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.intercept.FilterInvocationSecurityMetadataSource;
@@ -25,12 +27,16 @@ import java.util.Set;
 @Service("urlService")
 public class UrlServiceImpl implements UrlService, FilterInvocationSecurityMetadataSource {
 
-	@Resource
+	//@Resource
 	private UrlDao urlDao;
+
+	@Autowired
+	private UrlMapper urlMapper;
 
 	@Override
 	public Url getRoleByUrl(String url) {
-		return urlDao.getRoleByUrl(url);
+		//return urlDao.getRoleByUrl(url);
+		return urlMapper.getRoleByUrl(url);
 	}
 
 	/**
