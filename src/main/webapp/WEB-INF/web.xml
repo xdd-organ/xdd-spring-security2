@@ -8,6 +8,10 @@
 		<param-value>classpath:spring-public.xml</param-value>
 	</context-param>
 
+	<listener>
+		<listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
+	</listener>
+
 	<!-- 添加spring监听器 -->
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

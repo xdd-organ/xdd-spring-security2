@@ -35,12 +35,16 @@
 
 		  -->
 		<security:csrf disabled="false"/>
+		<security:custom-filter position="CONCURRENT_SESSION_FILTER" ref="concurrencyFilter" />
+		<security:custom-filter position="LOGOUT_FILTER" ref="requestSingleLogoutFilter" />
 
-				<!-- 增加权限过滤器,采用数据库方式获取权限 -->
+
+
+
+		<!-- 增加权限过滤器,采用数据库方式获取权限 -->
 		<security:custom-filter ref="filterSecurityInterceptor" before="FILTER_SECURITY_INTERCEPTOR"/>
 
 		<security:custom-filter ref="captchaAuthenticaionFilter" position="FORM_LOGIN_FILTER"/>
-
 
 		<!-- 默认登录地址：j_spring_security_check -->
 		<!--<security:form-login default-target-url="/index.jsp" -->
@@ -50,14 +54,15 @@
 			<!--login-page="/login.jsp"/>-->
 
 		<!-- 注销也是由,Security框架来实现,LogoutFilter ,默认地址j_spring_security_logout   -->
-	 	<security:logout logout-success-url="/login.jsp" delete-cookies="JSESSIONID" invalidate-session="true"/>
+	 	<!--<security:logout logout-success-url="/login.jsp" delete-cookies="JSESSIONID" invalidate-session="true"/>-->
 
-		<security:remember-me remember-me-parameter="rememberMe" key="user" token-validity-seconds="10000"/>
+		<!--<security:remember-me remember-me-parameter="rememberMe" key="user" token-validity-seconds="10000"/>-->
 
 		<!-- session 管理 -->
-		<security:session-management invalid-session-url="/login.jsp" session-fixation-protection="migrateSession">
-			<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="true" expired-url="/login.jsp"/>
-		</security:session-management>
+		<!--<security:session-management invalid-session-url="/login.jsp" session-fixation-protection="migrateSession">-->
+			<!--<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="true" expired-url="/login.jsp"/>-->
+		<!--</security:session-management>-->
+		<security:session-management session-authentication-strategy-ref="sessionAuthenticationStrategy" />
 	</security:http>
 	
 	<!-- 配置 验证过滤器, 此过滤器取代系统的XML权限过滤 , 此过滤器配置完毕之后存放到 系统缺省的过滤链中-->
@@ -96,6 +101,7 @@
 		<property name="filterProcessesUrl" value="/login" />
 		<property name="usernameParameter" value="username"/>
 		<property name="passwordParameter" value="password"/>
+		<property name="sessionAuthenticationStrategy" ref="sessionAuthenticationStrategy"/>
 	</bean>
 
 	<bean id="authenticationSuccessHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
@@ -106,5 +112,39 @@
 		  class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
 		<property name="defaultFailureUrl" value="/login.jsp" />
 	</bean>
+
+	<bean id="sessionAuthenticationStrategy"
+				class="org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy">
+		<constructor-arg>
+			<list>
+				<bean class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
+					<constructor-arg ref="sessionRegistry" />
+					<property name="maximumSessions" value="1" />
+					<property name="exceptionIfMaximumExceeded" value="false" />
+				</bean>
+				<bean class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy" />
+				<bean class="org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy">
+					<constructor-arg ref="sessionRegistry" />
+				</bean>
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+
+	<bean id="concurrencyFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter">
+		<constructor-arg index="0" ref="sessionRegistry"/>
+	</bean>
+
+	<bean id="requestSingleLogoutFilter"
+		  class="org.springframework.security.web.authentication.logout.LogoutFilter">
+		<constructor-arg value="/login.jsp"/>
+		<constructor-arg>
+			<bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"/>
+		</constructor-arg>
+		<property name="filterProcessesUrl" value="/logout"/>
+	</bean>
+
+
 
 </beans>
