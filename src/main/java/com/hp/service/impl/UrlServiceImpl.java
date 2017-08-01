@@ -60,7 +60,8 @@ public class UrlServiceImpl implements UrlService, FilterInvocationSecurityMetad
 			return c; // 将privilege中的roles改为Collection<ConfigAttribute> ，role需要实现ConfigAttribute接口
 		} else {
 			// 如果返回为null则说明此url地址不需要相应的角色就可以访问, 这样Security会放行
-			return null;
+			throw new IllegalArgumentException("没有访问权限");
+			//return null;
 		}
 	}
 

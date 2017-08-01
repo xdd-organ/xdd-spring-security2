@@ -6,6 +6,12 @@
           http://www.springframework.org/schema/security
           http://www.springframework.org/schema/security/spring-security-4.2.xsd">
 
+	<security:http pattern="/" security="none"/>
+	<security:http pattern="/login.jsp" security="none"/>
+	<security:http pattern="/demo/login" security="none"/>
+	<security:http pattern="/logout" security="none"/>
+	<security:http pattern="/index.jsp" security="none"/>
+
 	<!-- 认证管理器,配置了管理员与角色的关系  -->
 	<security:authentication-manager alias="authenticationManager">
 		<!-- 配置账号密码所属的角色  角色以 ROLE_开头，为spring获取名称的标识 (xml方式的才需要)
@@ -19,6 +25,7 @@
 			</security:user-service>
 			 -->
 		</security:authentication-provider>
+		<security:authentication-provider ref="rememberMeAuthenticationProvider"/>
 	</security:authentication-manager>
 	
 	<!--
@@ -34,9 +41,10 @@
 		<security:intercept-url pattern="/user/**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN')" />	
 
 		  -->
-		<security:csrf disabled="false"/>
+		<security:csrf disabled="true"/><!-- true:禁用 -->
 		<security:custom-filter position="CONCURRENT_SESSION_FILTER" ref="concurrencyFilter" />
 		<security:custom-filter position="LOGOUT_FILTER" ref="requestSingleLogoutFilter" />
+		<!--<security:custom-filter position="SESSION_MANAGEMENT_FILTER" ref="sessionManagementFilter" />-->
 
 
 
@@ -45,6 +53,8 @@
 		<security:custom-filter ref="filterSecurityInterceptor" before="FILTER_SECURITY_INTERCEPTOR"/>
 
 		<security:custom-filter ref="captchaAuthenticaionFilter" position="FORM_LOGIN_FILTER"/>
+
+		<security:custom-filter ref="rememberMeFilter" position="REMEMBER_ME_FILTER"/>
 
 		<!-- 默认登录地址：j_spring_security_check -->
 		<!--<security:form-login default-target-url="/index.jsp" -->
@@ -56,7 +66,8 @@
 		<!-- 注销也是由,Security框架来实现,LogoutFilter ,默认地址j_spring_security_logout   -->
 	 	<!--<security:logout logout-success-url="/login.jsp" delete-cookies="JSESSIONID" invalidate-session="true"/>-->
 
-		<!--<security:remember-me remember-me-parameter="rememberMe" key="user" token-validity-seconds="10000"/>-->
+		<!--<security:remember-me remember-me-parameter="rememberMe" token-validity-seconds="10000" user-service-ref="accountService"/>-->
+		<!--<security:remember-me remember-me-parameter="rememberMe" data-source-ref="dataSource"/>-->
 
 		<!-- session 管理 -->
 		<!--<security:session-management invalid-session-url="/login.jsp" session-fixation-protection="migrateSession">-->
@@ -91,7 +102,7 @@
 	</bean>-->
 
 	<bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
-		<constructor-arg index="0" value="/login.jsp"/>
+		<constructor-arg index="0" value="/demo/login"/>
 	</bean>
 
 	<bean id="captchaAuthenticaionFilter" class="com.hp.security.filter.CaptchaAuthenticationFilter">
@@ -102,6 +113,7 @@
 		<property name="usernameParameter" value="username"/>
 		<property name="passwordParameter" value="password"/>
 		<property name="sessionAuthenticationStrategy" ref="sessionAuthenticationStrategy"/>
+		<property name="rememberMeServices" ref="rememberMeServices"/>
 	</bean>
 
 	<bean id="authenticationSuccessHandler" class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
@@ -110,7 +122,7 @@
 
 	<bean id="authenticationFailureHandler"
 		  class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
-		<property name="defaultFailureUrl" value="/login.jsp" />
+		<property name="defaultFailureUrl" value="/demo/login" />
 	</bean>
 
 	<bean id="sessionAuthenticationStrategy"
@@ -138,11 +150,60 @@
 
 	<bean id="requestSingleLogoutFilter"
 		  class="org.springframework.security.web.authentication.logout.LogoutFilter">
-		<constructor-arg value="/login.jsp"/>
+		<constructor-arg value="/demo/login"/>
 		<constructor-arg>
 			<bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"/>
 		</constructor-arg>
 		<property name="filterProcessesUrl" value="/logout"/>
+	</bean>
+
+	<bean id="sessionManagementFilter" class="org.springframework.security.web.session.SessionManagementFilter">
+		<constructor-arg index="0" ref="contextRepository"/>
+		<constructor-arg index="1" ref="sessionAuthenticationStrategy"/>
+	</bean>
+
+	<bean id="contextRepository" class="org.springframework.security.web.context.HttpSessionSecurityContextRepository"></bean>
+
+	<!-- Remember-Me 对应的 Filter -->
+	<bean id="rememberMeFilter"
+		  class="org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter">
+		<constructor-arg index="0" ref="authenticationManager"/>
+		<constructor-arg index="1" ref="rememberMeServices"/>
+	</bean>
+
+	<!-- RememberMeServices 的实现 -->
+	<bean id="rememberMeServices"
+		  class="org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices">
+		<constructor-arg index="0" value="elim"/>
+		<!-- 指定 request 中包含的用户是否选择了记住我的参数名 -->
+		<constructor-arg index="1" ref="accountService"/>
+		<!-- 指定 PersistentTokenRepository -->
+		<constructor-arg index="2" >
+			<bean class="org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl">
+				<!-- 数据源 -->
+				<property name="dataSource" ref="dataSource"/>
+				<!-- 是否在系统启动时创建持久化 token 的数据库表 -->
+				<property name="createTableOnStartup" value="false"/>
+			</bean>
+		</constructor-arg>
+		<property name="cookieName" value="abc"/>
+		<property name="parameter" value="rememberMe"/>
+	</bean>
+
+	<!-- RememberMeServices 的实现 -->
+	<!--<bean id="rememberMeServices"
+		  class="org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices">
+		<constructor-arg index="0" value="elim"/>
+		&lt;!&ndash; 指定 request 中包含的用户是否选择了记住我的参数名 &ndash;&gt;
+		<constructor-arg index="1" ref="accountService"/>
+		<property name="cookieName" value="abc"/>
+		<property name="parameter" value="rememberMe"/>
+	</bean>-->
+
+	<!-- key 值需与对应的 RememberMeServices 保持一致 -->
+	<bean id="rememberMeAuthenticationProvider"
+		  class="org.springframework.security.authentication.RememberMeAuthenticationProvider">
+		<constructor-arg index="0" value="elim"/>
 	</bean>
 
 

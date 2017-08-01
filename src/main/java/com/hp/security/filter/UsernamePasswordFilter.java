@@ -25,6 +25,7 @@ public class UsernamePasswordFilter extends UsernamePasswordAuthenticationFilter
             String username = this.obtainUsername(request);
             String password = this.obtainPassword(request);
             String code = request.getParameter("code");
+            String rememberMe = request.getParameter("rememberMe");
 
             if(username == null) {
                 username = "";

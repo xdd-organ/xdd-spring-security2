@@ -8,13 +8,30 @@
 		<param-value>classpath:spring-public.xml</param-value>
 	</context-param>
 
-	<listener>
-		<listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
-	</listener>
-
 	<!-- 添加spring监听器 -->
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<!-- spring MVC -->
+	<servlet>
+		<servlet-name>springmvc</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>classpath:springmvc-servlet.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+		<!-- servlet和filter中加入支持异步处理的代码 -->
+		<!--<async-supported>true</async-supported>-->
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>springmvc</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+
+	<listener>
+		<listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class>
 	</listener>
 
 	<!-- 添加 spring-security : springSecurityFilterChain 过滤链 -->
@@ -22,21 +39,6 @@
 		<filter-name>springSecurityFilterChain</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
 	</filter>
-	
-	<!-- openSessionInView配置 -->
-	<filter>
-		<filter-name>openSessionInView</filter-name>
-		<filter-class>org.springframework.orm.hibernate4.support.OpenSessionInViewFilter</filter-class>
-		<init-param>
-			<param-name>singleSession</param-name>
-			<param-value>true</param-value>
-		</init-param>
-	</filter>
-	
-	<filter-mapping>
-		<filter-name>openSessionInView</filter-name>
-		<url-pattern>*.action</url-pattern>
-	</filter-mapping>
 
 	<filter-mapping>
 		<filter-name>springSecurityFilterChain</filter-name>

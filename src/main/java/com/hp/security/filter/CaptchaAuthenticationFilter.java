@@ -19,7 +19,8 @@ public class CaptchaAuthenticationFilter extends UsernamePasswordAuthenticationF
             HttpServletResponse response) throws AuthenticationException {
 
         String genCode = this.obtainGeneratedCaptcha(request);  
-        String inputCode = this.obtainCaptcha(request);  
+        String inputCode = this.obtainCaptcha(request);
+        String rememberMe = request.getParameter("rememberMe");
         if(StringUtils.isEmpty(genCode)) {
             //i18n
             //throw new RuntimeException(this.messages.getMessage("LoginAuthentication.captchaInvalid"));

@@ -100,7 +100,7 @@ public class Account extends BaseModel implements UserDetails {
 	@Transient
 	@Override
 	public String getUsername() {
-		return name;
+		return login;
 	}
 
 	/**
