@@ -12,6 +12,20 @@
 	<security:http pattern="/logout" security="none"/>
 	<security:http pattern="/index.jsp" security="none"/>
 
+	<!--<bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
+		<constructor-arg>
+			<list>
+				<security:filter-chain pattern="/**"
+									   filters="securityContextPersistenceFilter
+								   			,requestSingleLogoutFilter
+											,captchaAuthenticaionFilter
+											,rememberMeFilter
+											,anonymousAuthenticationFilter
+											,filterSecurityInterceptor"/>
+			</list>
+		</constructor-arg>
+	</bean>-->
+
 	<!-- 认证管理器,配置了管理员与角色的关系  -->
 	<security:authentication-manager alias="authenticationManager">
 		<!-- 配置账号密码所属的角色  角色以 ROLE_开头，为spring获取名称的标识 (xml方式的才需要)
@@ -43,7 +57,7 @@
 		  -->
 		<security:csrf disabled="true"/><!-- true:禁用 -->
 		<security:custom-filter position="CONCURRENT_SESSION_FILTER" ref="concurrencyFilter" />
-		<security:custom-filter position="LOGOUT_FILTER" ref="requestSingleLogoutFilter" />
+		<!--<security:custom-filter position="LOGOUT_FILTER" ref="requestSingleLogoutFilter" />-->
 		<!--<security:custom-filter position="SESSION_MANAGEMENT_FILTER" ref="sessionManagementFilter" />-->
 
 
@@ -70,10 +84,10 @@
 		<!--<security:remember-me remember-me-parameter="rememberMe" data-source-ref="dataSource"/>-->
 
 		<!-- session 管理 -->
-		<!--<security:session-management invalid-session-url="/login.jsp" session-fixation-protection="migrateSession">-->
-			<!--<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="true" expired-url="/login.jsp"/>-->
-		<!--</security:session-management>-->
-		<security:session-management session-authentication-strategy-ref="sessionAuthenticationStrategy" />
+		<!--<security:session-management session-authentication-error-url="/demo/login">
+			<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="true"/>
+		</security:session-management>-->
+		<!--<security:session-management session-authentication-strategy-ref="sessionAuthenticationStrategy" />-->
 	</security:http>
 	
 	<!-- 配置 验证过滤器, 此过滤器取代系统的XML权限过滤 , 此过滤器配置完毕之后存放到 系统缺省的过滤链中-->
@@ -150,19 +164,30 @@
 
 	<bean id="requestSingleLogoutFilter"
 		  class="org.springframework.security.web.authentication.logout.LogoutFilter">
-		<constructor-arg value="/demo/login"/>
-		<constructor-arg>
+		<constructor-arg index="0" value="/demo/login"/>
+		<constructor-arg index="1">
 			<bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"/>
 		</constructor-arg>
 		<property name="filterProcessesUrl" value="/logout"/>
 	</bean>
 
+
 	<bean id="sessionManagementFilter" class="org.springframework.security.web.session.SessionManagementFilter">
 		<constructor-arg index="0" ref="contextRepository"/>
 		<constructor-arg index="1" ref="sessionAuthenticationStrategy"/>
+		<property name="authenticationFailureHandler" ref="simpleUrlAuthenticationFailureHandler"/>
 	</bean>
 
-	<bean id="contextRepository" class="org.springframework.security.web.context.HttpSessionSecurityContextRepository"></bean>
+	<bean id="simpleUrlAuthenticationFailureHandler"
+		  class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+		<constructor-arg value="/demo/login" />
+		<property name="allowSessionCreation" value="true" />
+	</bean>
+
+	<bean id="contextRepository" class="org.springframework.security.web.context.HttpSessionSecurityContextRepository">
+		<property name="allowSessionCreation" value="true" />
+		<property name="disableUrlRewriting" value="true" />
+	</bean>
 
 	<!-- Remember-Me 对应的 Filter -->
 	<bean id="rememberMeFilter"
@@ -188,6 +213,8 @@
 		</constructor-arg>
 		<property name="cookieName" value="abc"/>
 		<property name="parameter" value="rememberMe"/>
+		<!-- 默认时间14天 -->
+		<property name="tokenValiditySeconds" value="604800" />
 	</bean>
 
 	<!-- RememberMeServices 的实现 -->
@@ -206,6 +233,14 @@
 		<constructor-arg index="0" value="elim"/>
 	</bean>
 
+	<bean id="securityContextPersistenceFilter"
+		  class="org.springframework.security.web.context.SecurityContextPersistenceFilter"/>
 
+	<bean id="anonymousAuthenticationFilter"
+		  class="org.springframework.security.web.authentication.AnonymousAuthenticationFilter">
+		<constructor-arg index="0" value="BF93JFJ091N00Q7HF"/>
+		<!--<property name="userAttribute" value="anonymousUser,ROLE_ANONYMOUS"/>-->
+		<!--<property name="key" value="BF93JFJ091N00Q7HF"/>-->
+	</bean>
 
 </beans>

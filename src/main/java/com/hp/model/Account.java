@@ -3,6 +3,7 @@ package com.hp.model;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
@@ -165,5 +166,50 @@ public class Account extends BaseModel implements UserDetails {
 
 	public void setAuthorities(Collection<? extends GrantedAuthority> authorities) {
 		this.authorities = authorities;
+	}
+
+	@Override
+	public boolean equals(Object rhs) {
+		if (rhs instanceof Account) {
+			return login.equals(((Account) rhs).login);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return login.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(super.toString()).append(": ");
+		sb.append("Username: ").append(this.username).append("; ");
+		sb.append("Password: [PROTECTED]; ");
+		sb.append("Enabled: ").append(this.enabled).append("; ");
+		sb.append("AccountNonExpired: ").append(this.accountNonExpired).append("; ");
+		sb.append("credentialsNonExpired: ").append(this.credentialsNonExpired)
+				.append("; ");
+		sb.append("AccountNonLocked: ").append(this.accountNonLocked).append("; ");
+
+		/*if (!authorities.isEmpty()) {
+			sb.append("Granted Authorities: ");
+
+			boolean first = true;
+			for (GrantedAuthority auth : authorities) {
+				if (!first) {
+					sb.append(",");
+				}
+				first = false;
+
+				sb.append(auth);
+			}
+		}
+		else {
+			sb.append("Not granted any authorities");
+		}*/
+
+		return sb.toString();
 	}
 }
