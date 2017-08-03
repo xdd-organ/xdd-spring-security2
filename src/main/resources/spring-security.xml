@@ -12,7 +12,6 @@
 	<!--<security:http pattern="/logout" security="none"/>-->
 	<!--<security:http pattern="/demo/logout" security="none"/>-->
 	<security:http pattern="/index.jsp" security="none"/>
-	<security:http pattern="/j_spring_security_logout" security="none"/>
 
 	<!--<bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
 		<constructor-arg>
@@ -82,7 +81,7 @@
 		<!-- 注销也是由,Security框架来实现,LogoutFilter ,默认地址j_spring_security_logout   -->
 	 	<security:logout logout-url="/logout"
 						 logout-success-url="/demo/login"
-						 delete-cookies="JSESSIONID"
+						 delete-cookies="JSESSIONID,abc"
 						 invalidate-session="true"/>
 
 		<!--<security:remember-me remember-me-parameter="rememberMe" token-validity-seconds="10000" user-service-ref="accountService"/>-->
@@ -151,7 +150,7 @@
 				<bean class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
 					<constructor-arg ref="sessionRegistry" />
 					<property name="maximumSessions" value="1" />
-					<property name="exceptionIfMaximumExceeded" value="false" />
+					<property name="exceptionIfMaximumExceeded" value="true" />
 				</bean>
 				<bean class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy" />
 				<bean class="org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy">
@@ -161,7 +160,8 @@
 		</constructor-arg>
 	</bean>
 
-	<bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+	<!--<bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />-->
+	<bean id="sessionRegistry" class="com.hp.service.impl.RedisSessionRegistryImpl" />
 
 	<bean id="concurrencyFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter">
 		<constructor-arg index="0" ref="sessionRegistry"/>
