@@ -9,8 +9,10 @@
 	<security:http pattern="/" security="none"/>
 	<security:http pattern="/login.jsp" security="none"/>
 	<security:http pattern="/demo/login" security="none"/>
-	<security:http pattern="/logout" security="none"/>
+	<!--<security:http pattern="/logout" security="none"/>-->
+	<!--<security:http pattern="/demo/logout" security="none"/>-->
 	<security:http pattern="/index.jsp" security="none"/>
+	<security:http pattern="/j_spring_security_logout" security="none"/>
 
 	<!--<bean id="springSecurityFilterChain" class="org.springframework.security.web.FilterChainProxy">
 		<constructor-arg>
@@ -78,7 +80,10 @@
 			<!--login-page="/login.jsp"/>-->
 
 		<!-- 注销也是由,Security框架来实现,LogoutFilter ,默认地址j_spring_security_logout   -->
-	 	<!--<security:logout logout-success-url="/login.jsp" delete-cookies="JSESSIONID" invalidate-session="true"/>-->
+	 	<security:logout logout-url="/logout"
+						 logout-success-url="/demo/login"
+						 delete-cookies="JSESSIONID"
+						 invalidate-session="true"/>
 
 		<!--<security:remember-me remember-me-parameter="rememberMe" token-validity-seconds="10000" user-service-ref="accountService"/>-->
 		<!--<security:remember-me remember-me-parameter="rememberMe" data-source-ref="dataSource"/>-->
@@ -87,7 +92,7 @@
 		<!--<security:session-management session-authentication-error-url="/demo/login">
 			<security:concurrency-control max-sessions="1" error-if-maximum-exceeded="true"/>
 		</security:session-management>-->
-		<!--<security:session-management session-authentication-strategy-ref="sessionAuthenticationStrategy" />-->
+		<security:session-management session-authentication-strategy-ref="sessionAuthenticationStrategy" />
 	</security:http>
 	
 	<!-- 配置 验证过滤器, 此过滤器取代系统的XML权限过滤 , 此过滤器配置完毕之后存放到 系统缺省的过滤链中-->
@@ -164,9 +169,16 @@
 
 	<bean id="requestSingleLogoutFilter"
 		  class="org.springframework.security.web.authentication.logout.LogoutFilter">
-		<constructor-arg index="0" value="/demo/login"/>
+		<!--<constructor-arg index="0" value="/demo/login"/>-->
+		<constructor-arg index="0">
+			<bean class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler">
+				<property name="defaultTargetUrl" value="/demo/login"/>
+			</bean>
+		</constructor-arg>
 		<constructor-arg index="1">
-			<bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"/>
+			<bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler">
+				<property name="invalidateHttpSession" value="true"/>
+			</bean>
 		</constructor-arg>
 		<property name="filterProcessesUrl" value="/logout"/>
 	</bean>

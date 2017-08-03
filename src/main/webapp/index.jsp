@@ -5,6 +5,19 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>首页</title>
-</head> 
-<a href="/logout">注销</a>
+	<script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.9.0/jquery.min.js"></script>
+</head>
+<body>
+<a href="/logout">退出</a>
+<button id="btn">注销</button>
+<script type="text/javascript">
+	$(function () {
+        $("#btn").click(function () {
+            $.post("/logout",function(data,status){
+                console.log("退出成功！");
+            });
+        });
+    });
+</script>
+</body>
 </html>

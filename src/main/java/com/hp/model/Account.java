@@ -168,6 +168,11 @@ public class Account extends BaseModel implements UserDetails {
 		this.authorities = authorities;
 	}
 
+    /**
+     * session并发数量需要重写equals()与hashCode()方法
+     * @param rhs
+     * @return
+     */
 	@Override
 	public boolean equals(Object rhs) {
 		if (rhs instanceof Account) {
